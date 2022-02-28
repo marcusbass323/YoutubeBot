@@ -2,7 +2,7 @@ import requests
 import proxylist
 import random
 import time
-import random
+import string
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -11,17 +11,20 @@ from selenium.webdriver.common.keys import Keys
 
 chrome_options = Options()
 
-#Run headless
+#run headless
 chrome_options.add_argument("--headless")
 
-#Removes browser control flag
+#removes browser control flag
 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
 chrome_options.add_experimental_option('useAutomationExtension', False)
 
-#Set browser size
+#set browser size
 chrome_options.add_argument("--start-maximized")
 
-# User-Agent
+#mute audio
+chrome_options.add_argument("--mute-audio")
+
+#set user-agent
 chrome_options.add_argument("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95 Safari/537.36")
 
 #disable chrome password/security popups
@@ -29,7 +32,7 @@ prefs = {"credentials_enable_service": False,
      "profile.password_manager_enabled": False}
 chrome_options.add_experimental_option("prefs", prefs)
 
-#Modifying navigator.webdriver flag to prevent selenium detection
+#modifying navigator.webdriver flag to prevent selenium detection
 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
 chrome_options.add_experimental_option('useAutomationExtension', False)
 
@@ -48,31 +51,22 @@ video_links = [
     'http://www.youtube.com/watch?v=MpErucI98NU',
     'http://www.youtube.com/watch?v=xqCSLvfNk5M&t=1441s',
 ]    
-
 def video_hit():
-    set_ip()
-    driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
-    driver.get(video_links[0])
-    print('Opening first video link')
-    time.sleep(3)
-    buttons = driver.find_elements_by_tag_name('button')
-    for button in buttons:
-        id = button.get_attribute('aria-label')
-        if id == 'Play':
-            button.click()
-    time.sleep(3)
-    for video in video_links[1:]:
-        driver.execute_script("window.open('');")
-        driver.switch_to.window(driver.window_handles[video_links.index(video)])
+    for video in video_links:
+        set_ip()
+        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
         driver.get(video)
         print('Video', video_links.index(video), 'opened')
-        time.sleep(30)
-    time.sleep(5)
-    print('Tearing down service')
-    for tab in video_links[::-1]:
-        driver.switch_to.window(driver.window_handles[video_links.index(tab)])
-        driver.close()
+        buttons = driver.find_elements_by_tag_name('button')
+        for button in buttons:
+            id = button.get_attribute('aria-label')
+            if id == 'Play':
+                button.click()
         time.sleep(2)
+    time.sleep(20)
+    driver.quit()
+    time.sleep(2)
+    print('Tearing down service')
     print('Recycling IP')
     video_hit()
 video_hit()
